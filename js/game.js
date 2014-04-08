@@ -22,7 +22,6 @@ tile.init = function() {
 		}
 	}
 	var number = Math.floor(tile.number*4+1*tile.number*Math.random());
-  	console.log(number);
 	var i = 0;
 	while (i < number) {
 		x = Math.floor(Math.random()*tile.number-0.01);
@@ -36,6 +35,10 @@ tile.init = function() {
 	render();
 }
 
+tile.next = function(x) {
+	return x//Math.pow(3,x-1)
+}
+
 addEventListener("click", getClickPosition, false);
 
 function getClickPosition(e) {
@@ -46,11 +49,10 @@ function getClickPosition(e) {
 
 addEventListener("keydown", function (e) {
 	if (e.keyCode === 82) {tile.init()}
-	else {update(e.keyCode);}
 }, false);
 
 var clicks = 0;
-var next = 1 + Math.round(Math.random());
+var next = tile.next(1 + Math.round(Math.random()));
 
 var change = function(x,y) {
 	x = Math.floor(x/tile.size);
@@ -58,14 +60,14 @@ var change = function(x,y) {
 	if (tile.array[x][y] === 0) {
 		clicks += 1;
 		tile.array[x][y] = next;
-		next = 1 + Math.round(Math.random());
+		next = tile.next(1 + Math.round(Math.random()));
 		chain.array = new Array();
 		var c = chain.find(x,y);
 		if (c.length >= 3) {
 			var value = tile.array[x][y];
 			for (var i=0; i<c.length; i++) {
 				tile.array[c[i][0]][c[i][1]] = 0;
-				tile.array[x][y] = value*2;
+				tile.array[x][y] = value+1;
 			}
 			refresh(x,y);
 		}
@@ -81,7 +83,7 @@ var refresh = function(x,y) {
 		for (var i=0; i<c.length; i++) {
 			tile.array[c[i][0]][c[i][1]] = 0;
 		}
-		tile.array[x][y] = value*2;
+		tile.array[x][y] = value+1;
 		refresh(x,y);
 	}
 }
@@ -133,18 +135,18 @@ var render = function () {
     		ctx.strokeStyle = "#FFFFFF";
 			ctx.lineWidth = "3";
 			switch (tile.array[i][j]) {
-				case 0: ctx.fillStyle = "rgba(0, 0, 256, 0.15)"; break;
-				case 1: ctx.fillStyle = "rgba(0, 0, 256, 0.25)"; break;
-				case 2: ctx.fillStyle = "rgba(0, 0, 256, 0.35)"; break;
+				case 0: ctx.fillStyle = "rgba(256, 256, 0, 0.65)"; break;
+				case 1: ctx.fillStyle = "rgba(0, 0, 256, 0.15)"; break;
+				case 2: ctx.fillStyle = "rgba(0, 0, 256, 0.25)"; break;
+				case 3: ctx.fillStyle = "rgba(0, 0, 256, 0.35)"; break;
 				case 4: ctx.fillStyle = "rgba(0, 0, 256, 0.45)"; break;
-				case 8: ctx.fillStyle = "rgba(0, 0, 256, 0.55)"; break;
-				case 16: ctx.fillStyle = "rgba(0, 0, 256, 0.65)"; break;
-				case 32: ctx.fillStyle = "rgba(256, 256, 0, 0.4)"; break;
-				case 64: ctx.fillStyle = "rgba(256, 256, 0, 0.5)"; break;
-				case 128: ctx.fillStyle = "rgba(256, 256, 0, 0.6)"; break;
-				case 256: ctx.fillStyle = "rgba(256, 256, 0, 0.7)"; break;
-				case 512: ctx.fillStyle = "rgba(256, 256, 0, 0.8)"; break;
-				default: ctx.fillStyle = "#6BA0FF";
+				case 5: ctx.fillStyle = "rgba(0, 0, 256, 0.55)"; break;
+				case 6: ctx.fillStyle = "rgba(0, 0, 256, 0.65)"; break;
+				case 7: ctx.fillStyle = "rgba(0, 0, 256, 0.75)"; break;
+				case 8: ctx.fillStyle = "rgba(0, 0, 256, 0.85)"; break;
+				case 9: ctx.fillStyle = "rgba(0, 0, 256, 0.95)"; break;
+				case 10: ctx.fillStyle = "rgba(0, 0, 256, 1)"; break;
+				default: ctx.fillStyle = "#FFF666";
 			} 
 			ctx.fillRect(i*tile.size, tile.y+j*tile.size, tile.size, tile.size);
 	    	ctx.strokeRect(i*tile.size, tile.y+j*tile.size, tile.size, tile.size);
@@ -153,7 +155,7 @@ var render = function () {
 	    	ctx.textAlign = "center";
     		ctx.textBaseline = "center";
 			if (tile.array[i][j] != 0) {
-    			ctx.fillText(tile.array[i][j], (i+0.5)*tile.size, tile.y+(j+0.5)*tile.size);
+    			ctx.fillText(tile.next(tile.array[i][j]), (i+0.5)*tile.size, tile.y+(j+0.5)*tile.size);
 			}
 		}
 	}
