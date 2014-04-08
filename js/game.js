@@ -9,7 +9,7 @@ var tile = {
 var canvas = document.createElement("canvas");
 var ctx = canvas.getContext("2d");
 canvas.width = tile.number*tile.size;
-canvas.height = (tile.number+1)*tile.size;
+canvas.height = (tile.number+2)*tile.size;
 document.body.appendChild(canvas);
 
 
@@ -33,6 +33,7 @@ tile.init = function() {
 			i += 1;
 		}
 	}
+	render();
 }
 
 addEventListener("click", getClickPosition, false);
@@ -42,6 +43,11 @@ function getClickPosition(e) {
     var yPosition = e.clientY;
 	change(e.clientX, e.clientY);
 }
+
+addEventListener("keydown", function (e) {
+	if (e.keyCode === 82) {tile.init()}
+	else {update(e.keyCode);}
+}, false);
 
 var clicks = 0;
 var next = 1 + Math.round(Math.random());
@@ -107,34 +113,48 @@ chain.find = function(x,y) {
   return this.array;
 }
 
+var check = function() {
+	for (var i=0; i<tile.number; i++) {
+		for (var j=0; j<tile.number; j++) {
+			if (tile.array[i][j] === 0) {
+				return 0;
+			}
+		}
+	}
+	return 1;
+}
+
 // Draw everything
 var render = function () {
 	canvas.width = canvas.width;
 	var inc = 0;
 	for (var i=0;i<tile.number;i++) {
 		for (var j=0;j<tile.number;j++) {
-    	ctx.strokeStyle = "#FFFFFF";
-		switch (tile.array[i][j]) {
-			case 0: ctx.fillStyle = "rgba(0, 0, 256, 0.1)"; break;
-			case 1: ctx.fillStyle = "rgba(0, 0, 256, 0.2)"; break;
-			case 2: ctx.fillStyle = "rgba(0, 0, 256, 0.3)"; break;
-			case 4: ctx.fillStyle = "rgba(0, 0, 256, 0.4)"; break;
-			case 16: ctx.fillStyle = "rgba(0, 0, 256, 0.5)"; break;
-			case 32: ctx.fillStyle = "rgba(256, 256, 0, 0.6)"; break;
-			case 64: ctx.fillStyle = "rgba(256, 256, 0, 0.7)"; break;
-			case 128: ctx.fillStyle = "rgba(256, 256, 0, 0.8)"; break;
-			case 256: ctx.fillStyle = "rgba(256, 256, 0, 0.9)"; break;
-			case 512: ctx.fillStyle = "rgba(256, 256, 0, 1)"; break;
-			default: ctx.fillStyle = "#6BA0FF";
-		} 
-		ctx.fillRect(i*tile.size, tile.y+j*tile.size, tile.size, tile.size);
-    	ctx.strokeRect(i*tile.size, tile.y+j*tile.size, tile.size, tile.size);
-    	ctx.fillStyle = "#000000";
-    	ctx.font = "24px Helvetica";
-    	ctx.textAlign = "center";
-    	ctx.textBaseline = "center";
-    	ctx.fillText(tile.array[i][j], (i+0.5)*tile.size, tile.y+(j+0.5)*tile.size);
-		//ctx.drawImage(tileImage, i*tile.size, j*tile.size, tile.size, tile.size);
+    		ctx.strokeStyle = "#FFFFFF";
+			ctx.lineWidth = "3";
+			switch (tile.array[i][j]) {
+				case 0: ctx.fillStyle = "rgba(0, 0, 256, 0.15)"; break;
+				case 1: ctx.fillStyle = "rgba(0, 0, 256, 0.25)"; break;
+				case 2: ctx.fillStyle = "rgba(0, 0, 256, 0.35)"; break;
+				case 4: ctx.fillStyle = "rgba(0, 0, 256, 0.45)"; break;
+				case 8: ctx.fillStyle = "rgba(0, 0, 256, 0.55)"; break;
+				case 16: ctx.fillStyle = "rgba(0, 0, 256, 0.65)"; break;
+				case 32: ctx.fillStyle = "rgba(256, 256, 0, 0.4)"; break;
+				case 64: ctx.fillStyle = "rgba(256, 256, 0, 0.5)"; break;
+				case 128: ctx.fillStyle = "rgba(256, 256, 0, 0.6)"; break;
+				case 256: ctx.fillStyle = "rgba(256, 256, 0, 0.7)"; break;
+				case 512: ctx.fillStyle = "rgba(256, 256, 0, 0.8)"; break;
+				default: ctx.fillStyle = "#6BA0FF";
+			} 
+			ctx.fillRect(i*tile.size, tile.y+j*tile.size, tile.size, tile.size);
+	    	ctx.strokeRect(i*tile.size, tile.y+j*tile.size, tile.size, tile.size);
+    		ctx.fillStyle = "#000000";
+    		ctx.font = "24px Helvetica";
+	    	ctx.textAlign = "center";
+    		ctx.textBaseline = "center";
+			if (tile.array[i][j] != 0) {
+    			ctx.fillText(tile.array[i][j], (i+0.5)*tile.size, tile.y+(j+0.5)*tile.size);
+			}
 		}
 	}
 	chain.array = new Array();	
@@ -143,7 +163,9 @@ var render = function () {
 	ctx.font = "14px Helvetica";
 	ctx.fillText('steps', 32, 52);
 	ctx.fillText('next', 288, 52);
+	if (check()) {
+		ctx.fillText('press R for restart', canvas.width/2, 32);
+	}
 }
 
 tile.init();
-render();
