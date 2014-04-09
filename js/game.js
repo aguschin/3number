@@ -1,17 +1,25 @@
 var tile = {
   size: 64,
   number: 5,
-  x: 0,
-  y: 64
+  x: 20,
+  y: 64,
+  nmax: 15
 }
 
 // Create the canvas
 var canvas = document.createElement("canvas");
 var ctx = canvas.getContext("2d");
-canvas.width = tile.number*tile.size;
+canvas.width = tile.x+tile.number*tile.size;
 canvas.height = (tile.number+2)*tile.size;
 document.body.appendChild(canvas);
 
+tile.ymax = function() {
+	return tile.y + tile.size*tile.number
+}
+
+tile.xmax = function() {
+	return tile.x + tile.size*tile.number
+}
 
 tile.init = function() {
 	tile.array = new Array();
@@ -24,8 +32,8 @@ tile.init = function() {
 	var number = Math.floor(tile.number*4+1*tile.number*Math.random());
 	var i = 0;
 	while (i < number) {
-		x = Math.floor(Math.random()*tile.number-0.01);
-		y = Math.floor(Math.random()*tile.number-0.01);
+		var x = Math.floor(Math.random()*tile.number-0.01);
+		var y = Math.floor(Math.random()*tile.number-0.01);
 		if (tile.array[x][y] === 0) {
 			tile.array[x][y] = 1;
 			refresh(x,y);
@@ -35,44 +43,108 @@ tile.init = function() {
 	render();
 }
 
-tile.next = function(x) {
-	return x//Math.pow(3,x-1)
+tile.print = function(x) {
+	if (x === -1) {return '*'}
+	return x//Math.pow(2,x-1)
 }
 
 addEventListener("click", getClickPosition, false);
 
 function getClickPosition(e) {
-    var xPosition = e.clientX;
-    var yPosition = e.clientY;
-	change(e.clientX, e.clientY);
+	var a = tile.getXY(e.clientX, e.clientY);
+	change(a[0],a[1]);
+}
+
+addEventListener("mousemove", getMousePosition, false);
+
+function getMousePosition(e)
+{
+    var mouseX, mouseY;
+	mouseX = e.layerX;
+    mouseY = e.layerY;
+    if (mouseX < tile.xmax()
+	&& mouseY < tile.ymax()
+	&& mouseY > tile.y
+	&& mouseX > tile.x) {
+		canvas.width = canvas.width;
+		render();
+		var ij = tile.getXY(mouseX,mouseY);
+		var i = ij[0], j = ij[1];
+		if (tile.array[i][j] === 0) {
+			if (next === -1) {
+				tile.crystal(i,j);
+				drawRect(i,j,"rgba(256, 256, 256, 1)");
+				drawText(i,j,tile.array[i][j],1);
+				tile.array[i][j] = 0;
+				next = -1;
+			}
+			else {
+				drawRect(i,j,"rgba(256, 256, 256, 1)");
+				drawText(i,j,next,1);
+			}
+		}
+		color(tile.array[i][j]);
+	}
+	else {
+		render();
+	}
 }
 
 addEventListener("keydown", function (e) {
-	if (e.keyCode === 82) {tile.init()}
+	if (e.keyCode === 82) {clicks = 0; tile.init();}
 }, false);
 
 var clicks = 0;
-var next = tile.next(1 + Math.round(Math.random()));
 
-var change = function(x,y) {
-	x = Math.floor(x/tile.size);
-	y = Math.floor((y-tile.y)/tile.size);
-	if (tile.array[x][y] === 0) {
-		clicks += 1;
-		tile.array[x][y] = next;
-		next = tile.next(1 + Math.round(Math.random()));
+tile.next = function() {
+	var x = Math.random();
+	switch (true) {
+		case (x<=0.40): return 1;
+		case (x<=0.70): return 2;
+		case (x<=0.85): return 3;
+		case (x<=0.90): return 4;
+		case (x<=0.95): return 5;
+		case (x<=1.00): return -1;
+	}
+}
+
+var next = tile.next();
+
+tile.crystal = function(x,y) {
+	for (var i=tile.nmax; i>=1; i--) {
+		tile.array[x][y] = i;
 		chain.array = new Array();
 		var c = chain.find(x,y);
 		if (c.length >= 3) {
-			var value = tile.array[x][y];
-			for (var i=0; i<c.length; i++) {
-				tile.array[c[i][0]][c[i][1]] = 0;
-				tile.array[x][y] = value+1;
-			}
-			refresh(x,y);
+			next = tile.next();
+			change(x,y);
+			return;
 		}
+	}
+}
+
+tile.getXY = function(x,y) {
+	x = Math.floor((x-tile.x)/tile.size);
+	y = Math.floor((y-tile.y)/tile.size);
+	return [x,y]	
+}
+
+var change = function(x,y) {
+	if (tile.array[x][y] === 0) {
+		clicks += 1;
+		if (next === -1) {
+			tile.crystal(x,y);
+			refresh(x,y);
+			return;
+		} 
+		else {
+			tile.array[x][y] = next;
+		}
+		next = tile.next();
+		refresh(x,y);
 		render();
 	}
+	return;
 }
 
 var refresh = function(x,y) {
@@ -90,6 +162,11 @@ var refresh = function(x,y) {
 
 chain = {}
 chain.array = new Array()
+/*chain.find = function(x,y) {
+	chain.array = new Array();
+	var a = chain.search(x,y);
+	return a;
+}*/
 chain.find = function(x,y) {
   if (tile.array[x][y] === 0) {
 	  return new Array();
@@ -126,6 +203,39 @@ var check = function() {
 	return 1;
 }
 
+var drawRect = function(i,j,color) {
+	ctx.fillStyle = color;
+	ctx.fillRect(tile.x+i*tile.size, tile.y+j*tile.size, tile.size, tile.size);
+	ctx.strokeRect(tile.x+i*tile.size, tile.y+j*tile.size, tile.size, tile.size);	
+}
+
+var drawText = function(i,j,n,scale) {
+	ctx.fillStyle = "#000000";
+    ctx.font = 24*scale+"px Helvetica";
+	ctx.textAlign = "center";
+    ctx.textBaseline = "center";
+	if (n != 0) {
+    	ctx.fillText(tile.print(n), tile.x+(i+0.5)*tile.size, tile.y+(j+0.5)*tile.size);
+	}
+}
+
+var color = function(x) {
+	switch (x) {
+	case 0: ctx.fillStyle = "rgba(256, 256, 0, 0.65)"; break;
+	case 1: ctx.fillStyle = "rgba(0, 0, 256, 0.15)"; break;
+	case 2: ctx.fillStyle = "rgba(0, 0, 256, 0.25)"; break;
+	case 3: ctx.fillStyle = "rgba(0, 0, 256, 0.35)"; break;
+	case 4: ctx.fillStyle = "rgba(0, 0, 256, 0.45)"; break;
+	case 5: ctx.fillStyle = "rgba(0, 0, 256, 0.55)"; break;
+	case 6: ctx.fillStyle = "rgba(0, 0, 256, 0.65)"; break;
+	case 7: ctx.fillStyle = "rgba(0, 0, 256, 0.75)"; break;
+	case 8: ctx.fillStyle = "rgba(0, 0, 256, 0.85)"; break;
+	case 9: ctx.fillStyle = "rgba(0, 0, 256, 0.95)"; break;
+	case 10: ctx.fillStyle = "rgba(0, 0, 256, 1)"; break;
+	default: ctx.fillStyle = "#FFF666";
+	} 
+}
+
 // Draw everything
 var render = function () {
 	canvas.width = canvas.width;
@@ -134,39 +244,19 @@ var render = function () {
 		for (var j=0;j<tile.number;j++) {
     		ctx.strokeStyle = "#FFFFFF";
 			ctx.lineWidth = "3";
-			switch (tile.array[i][j]) {
-				case 0: ctx.fillStyle = "rgba(256, 256, 0, 0.65)"; break;
-				case 1: ctx.fillStyle = "rgba(0, 0, 256, 0.15)"; break;
-				case 2: ctx.fillStyle = "rgba(0, 0, 256, 0.25)"; break;
-				case 3: ctx.fillStyle = "rgba(0, 0, 256, 0.35)"; break;
-				case 4: ctx.fillStyle = "rgba(0, 0, 256, 0.45)"; break;
-				case 5: ctx.fillStyle = "rgba(0, 0, 256, 0.55)"; break;
-				case 6: ctx.fillStyle = "rgba(0, 0, 256, 0.65)"; break;
-				case 7: ctx.fillStyle = "rgba(0, 0, 256, 0.75)"; break;
-				case 8: ctx.fillStyle = "rgba(0, 0, 256, 0.85)"; break;
-				case 9: ctx.fillStyle = "rgba(0, 0, 256, 0.95)"; break;
-				case 10: ctx.fillStyle = "rgba(0, 0, 256, 1)"; break;
-				default: ctx.fillStyle = "#FFF666";
-			} 
-			ctx.fillRect(i*tile.size, tile.y+j*tile.size, tile.size, tile.size);
-	    	ctx.strokeRect(i*tile.size, tile.y+j*tile.size, tile.size, tile.size);
-    		ctx.fillStyle = "#000000";
-    		ctx.font = "24px Helvetica";
-	    	ctx.textAlign = "center";
-    		ctx.textBaseline = "center";
-			if (tile.array[i][j] != 0) {
-    			ctx.fillText(tile.next(tile.array[i][j]), (i+0.5)*tile.size, tile.y+(j+0.5)*tile.size);
-			}
+			color(tile.array[i][j]);
+			drawRect(i,j,ctx.fillStyle);
+			drawText(i,j,tile.array[i][j],1);
 		}
 	}
 	chain.array = new Array();	
-	ctx.fillText(clicks, 32, 32);
-	ctx.fillText(next, 288, 32);
+	ctx.fillText(clicks, tile.x+32, 32);
+	ctx.fillText(tile.print(next), tile.x+288, 32);
 	ctx.font = "14px Helvetica";
-	ctx.fillText('steps', 32, 52);
-	ctx.fillText('next', 288, 52);
+	ctx.fillText('steps', tile.x+32, 52);
+	ctx.fillText('next', tile.x+288, 52);
 	if (check()) {
-		ctx.fillText('press R for restart', canvas.width/2, 32);
+		ctx.fillText('press R for restart', tile.x+canvas.width/2, 32);
 	}
 }
 
