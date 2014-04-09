@@ -13,6 +13,10 @@ canvas.width = tile.x+tile.number*tile.size;
 canvas.height = (tile.number+2)*tile.size;
 document.body.appendChild(canvas);
 
+document.addEventListener('touchmove', function(e) {
+	e.preventDefault();
+}, false);
+
 tile.ymax = function() {
 	return tile.y + tile.size*tile.number
 }
