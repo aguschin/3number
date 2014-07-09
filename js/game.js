@@ -10,7 +10,7 @@ var tile = {
 var canvas = document.createElement("canvas");
 var ctx = canvas.getContext("2d");
 canvas.width = tile.x+tile.number*tile.size;
-canvas.height = (tile.number+2)*tile.size;
+canvas.height = (tile.number+1)*tile.size;
 document.body.appendChild(canvas);
 
 document.addEventListener('touchmove', function(e) {
@@ -55,7 +55,7 @@ tile.print = function(x) {
 addEventListener("click", getClickPosition, false);
 
 function getClickPosition(e) {
-	var a = tile.getXY(e.clientX, e.clientY);
+	var a = tile.getXY(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
 	change(a[0],a[1]);
 }
 
@@ -64,8 +64,8 @@ addEventListener("mousemove", getMousePosition, false);
 function getMousePosition(e)
 {
     var mouseX, mouseY;
-	mouseX = e.layerX;
-    mouseY = e.layerY;
+	mouseX = e.clientX - canvas.offsetLeft;
+    mouseY = e.clientY - canvas.offsetTop;
     if (mouseX < tile.xmax()
 	&& mouseY < tile.ymax()
 	&& mouseY > tile.y

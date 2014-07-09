@@ -5,12 +5,36 @@
     <style>
     body {
       overflow-x: hidden;
+	  text-align: center;
     }
+	#help {
+		margin-top: 14px;
+		font-family: Helvetica;
+		font-size: 14px;
+	}
     </style>
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+	<script type="text/javascript">
+	$(document).ready(function(){
+		$("#help").mouseover(function() {
+			//$(this).animate({ opacity: "0" }, 700);
+			this.innerHTML="Play game, have fun :)";
+			//$(this).animate({ opacity: "1" }, 700);
+		});
+		$("#help").mouseout(function() {
+			//$(this).animate({ opacity: "0" }, 700);
+			this.innerHTML="Help";
+			//$(this).stop().animate({ opacity: "1" }, 1000);
+			
+		});
+	});
+	</script>
+
 		<title>3number</title>
     <link rel="shortcut icon" href="favicon.png">
 	</head>
 	<body style="margin:auto;"> 
 		<script  src="js/game.js"></script>
+		<div id="help">Help</div>
 	</body>
 </html>
